@@ -23,6 +23,15 @@
 			"protocol": {
 				"asset": true,
 				"assetScope": ["**"]
+			},
+			"globalShortcut": {
+				"all": true
+			},
+			"process": {
+				"exit": true
+			},
+			"dialog": {
+				"open": true
 			}
     },
 		"macOSPrivateApi": true,
@@ -49,8 +58,13 @@
         "width": 800,
         "height": 600,
 				"hiddenTitle": true,
-				"titleBarStyle": "Transparent"
+				"titleBarStyle": "Transparent",
+				"transparent": true
       }
-    ]
+    ],
+		"systemTray": {
+			"iconPath": "icons/128x128.png",
+			"iconAsTemplate": true
+		}
   }
 }

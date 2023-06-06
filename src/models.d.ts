@@ -3,4 +3,5 @@ type Game = {
 	title: string;
 	background: string;
 	icon: string;
+	path: string;
 };

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { invoke } from "@tauri-apps/api/tauri";
-	import { onMount } from "svelte";
 	import { gamesStore } from "../store";
 	import GameSlot from "../components/GameSlot.svelte";
 
@@ -15,18 +14,18 @@
 	function addEntry() {
 		gamesStore.update((x) => [
 			...x,
-			{ id: x.length + 1, title: "", icon: "", background: "" },
+			{ id: x.length + 1, title: "", icon: "", background: "", path: "" },
 		]);
 	}
 </script>
 
 <div>
-	<h1 class="text-white text-5xl font-bold mb-6">Game List</h1>
+	<h1 class="text-white text-5xl font-bold mb-6 pt-6">Game List</h1>
 	{#if loading}
 		<h2>Loading</h2>
 	{:else}
 		<div class="mb-4 flex justify-between">
-			<h3 class="text-gray-100 text-3xl">{$gamesStore.length} games saved</h3>
+			<h3 class="text-gray-100 text-2xl">{$gamesStore.length} games saved</h3>
 			<button on:click={addEntry}>
 				<h3
 					class="text-gray-100 text-3xl hover:cursor-pointer group hover:text-gray-400 active:scale-95"

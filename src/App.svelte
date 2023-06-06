@@ -10,7 +10,6 @@
 	import OptionsPage from "./lib/views/OptionsPage.svelte";
 
 	let page = PageViews.homepage;
-	console.log(page);
 
 	function toggleSettings() {
 		page = page === PageViews.options ? PageViews.homepage : PageViews.options;

@@ -4,7 +4,8 @@
 mod db;
 mod model;
 
-use std::fs::{create_dir, write};
+use rand::Rng;
+use std::fs::{create_dir, remove_file, write};
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -13,8 +14,8 @@ use opener::open;
 use tauri::{Manager, State};
 
 #[tauri::command]
-fn open_app() -> Result<(), String> {
-    if let Err(_) = open("/System/Applications/Notes.app") {
+fn open_app(path: String) -> Result<(), String> {
+    if let Err(_) = open(path) {
         return Err("Could not open app".into());
     }
 
@@ -42,19 +43,33 @@ fn save_image(
     image: Vec<u8>,
     id: u64,
     image_type: u8,
+    old_path: String,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
+    println!("{}", old_path);
     let Some(data_dir) = app_handle.path_resolver().app_data_dir() else {
         return Err("Couldn't find data directory".to_string());
     };
 
+    if Path::new(&old_path).exists() {
+        remove_file(old_path).ok();
+    }
+
     let img_path: PathBuf;
+    let rand_path_number = rand::thread_rng().gen_range(0..10000);
     match image_type {
         x if x == ImageType::Icon as u8 => {
-            img_path = data_dir.join("icons").join(id.to_string() + ".png")
+            img_path =
+                data_dir
+                    .join("icons")
+                    .join(format!("{}-{}.png", id.to_string(), rand_path_number));
         }
         x if x == ImageType::Background as u8 => {
-            img_path = data_dir.join("backgrounds").join(id.to_string() + ".png")
+            img_path = data_dir.join("backgrounds").join(format!(
+                "{}-{}.png",
+                id.to_string(),
+                rand_path_number
+            ));
         }
         _ => return Err("Invalid image type".to_string()),
     }
@@ -80,6 +95,13 @@ fn prepare_directories(path: &PathBuf) {
 
 fn main() {
     tauri::Builder::default()
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                event.window().hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
+        })
         .setup(|app| {
             let Some(resource_path) = app.path_resolver().app_data_dir() else {
                 panic!("Cannot find path for data folder");
