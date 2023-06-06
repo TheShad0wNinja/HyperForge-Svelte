@@ -1,5 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
+)]
 
 mod db;
 mod model;
@@ -8,6 +11,7 @@ use rand::Rng;
 use std::fs::{create_dir, remove_file, write};
 use std::path::Path;
 use std::path::PathBuf;
+use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 use model::Game;
 use opener::open;
@@ -114,11 +118,18 @@ fn main() {
                 panic!("Could not create db");
             };
 
-            let Some(main_window) = app.get_window("main") else {
+            let Some(window) = app.get_window("main") else {
                 return Ok(());
             };
 
-            main_window.maximize()?;
+            #[cfg(target_os = "windows")]
+            apply_blur(&window, Some((18, 18, 18, 125)))
+                .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+
+            #[cfg(target_os = "macos")]
+            apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
+                .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

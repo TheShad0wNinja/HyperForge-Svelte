@@ -3,11 +3,14 @@
 	import { convertFileSrc } from "@tauri-apps/api/tauri";
 	import { onMount } from "svelte";
 	import { open } from "@tauri-apps/api/dialog";
+	import { readBinaryFile } from "@tauri-apps/api/fs";
 
 	export let game: Game;
 
 	let loading = true;
 	let iconUrl: string, backgroundUrl: string;
+
+	const imageTypes = ["png", "jpeg", "jpg", "gif", "ico", "webp"];
 
 	onMount(async () => {
 		iconUrl = game.icon.length > 0 ? convertFileSrc(game.icon) : "";
@@ -23,17 +26,16 @@
 		Background,
 	}
 
-	async function imageToArray(img: File): Promise<number[]> {
-		const buffer = await img.arrayBuffer();
-		const imageArray = Array.from(new Uint8Array(buffer));
-		return imageArray;
-	}
+	async function handleIconUpload() {
+		const dialog = (await open({
+			multiple: false,
+			filters: [{ extensions: imageTypes, name: "images" }],
+		})) as string | null;
+		if (dialog == null) return;
 
-	async function handleIconUpload(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const imageArray = await imageToArray(input.files[0]);
+		const imgArray = Array.from(await readBinaryFile(dialog));
 		const imgPath = (await invoke("save_image", {
-			image: imageArray,
+			image: imgArray,
 			id: game.id,
 			imageType: ImageType.Icon,
 			oldPath: game.icon,
@@ -45,11 +47,16 @@
 		game = game;
 	}
 
-	async function handleBackgroundUpload(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const imageArray = await imageToArray(input.files[0]);
+	async function handleBackgroundUpload() {
+		const dialog = (await open({
+			multiple: false,
+			filters: [{ extensions: imageTypes, name: "images" }],
+		})) as string | null;
+		if (dialog == null) return;
+
+		const imgArray = Array.from(await readBinaryFile(dialog));
 		const imgPath = (await invoke("save_image", {
-			image: imageArray,
+			image: imgArray,
 			id: game.id,
 			imageType: ImageType.Background,
 			oldPath: game.background,
@@ -88,8 +95,9 @@
 			</div>
 			<div class="flex items-start gap-2">
 				<h6 class="text-gray-300 tracking-wide">Icon</h6>
-				<label
+				<button
 					class=" relative cursor-pointer group border-2 border-slate-700 rounded p-2 w-32 h-32 gap-1 flex flex-col items-center justify-center"
+					on:click={handleIconUpload}
 				>
 					{#if iconUrl.length > 0}
 						<img
@@ -131,12 +139,7 @@
 							d="M11.47 2.47a.75.75 0 011.06 0l4.5 4.5a.75.75 0 01-1.06 1.06l-3.22-3.22V16.5a.75.75 0 01-1.5 0V4.81L8.03 8.03a.75.75 0 01-1.06-1.06l4.5-4.5zM3 15.75a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
 						/>
 					</svg>
-					<input
-						type="file"
-						class="absolute top-0 left-0 w-full h-full hidden"
-						on:change={handleIconUpload}
-					/>
-				</label>
+				</button>
 			</div>
 			<div class="flex items-center gap-2">
 				<h6 class="text-gray-300 tracking-wide">Path</h6>
@@ -149,8 +152,9 @@
 			</div>
 		</div>
 		<div class="w-full">
-			<label
-				class="relative cursor-pointer flex justify-center items-center flex-col border-2 border-gray-800 border-dashed group h-[240px]"
+			<button
+				class="relative cursor-pointer flex justify-center items-center flex-col border-2 border-gray-800 border-dashed group h-[240px] w-full"
+				on:click={handleBackgroundUpload}
 			>
 				{#if game.background.length != 0}
 					<img
@@ -184,12 +188,7 @@
 						Upload background
 					</span>
 				{/if}
-				<input
-					type="file"
-					class="absolute top-0 left-0 w-full h-full hidden"
-					on:change={handleBackgroundUpload}
-				/>
-			</label>
+			</button>
 		</div>
 	{/if}
 </div>

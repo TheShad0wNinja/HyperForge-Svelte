@@ -32,6 +32,9 @@
 			},
 			"dialog": {
 				"open": true
+			}, 
+			"fs": {
+				"readFile": true
 			}
     },
 		"macOSPrivateApi": true,
@@ -54,12 +57,15 @@
       {
         "fullscreen": false,
         "resizable": false,
+				"maximized": true,
         "title": "HyperForge",
         "width": 800,
         "height": 600,
 				"hiddenTitle": true,
-				"titleBarStyle": "Transparent",
-				"transparent": true
+				"titleBarStyle": "Overlay",
+				"transparent": true,
+				"decorations": false
+
       }
     ],
 		"systemTray": {
