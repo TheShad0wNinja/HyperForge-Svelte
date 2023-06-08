@@ -2,12 +2,18 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 	import { gamesStore } from "../store";
 	import GameSlot from "../components/GameSlot.svelte";
+	import { scale } from "svelte/transition";
+	import { quintInOut } from "svelte/easing";
+	import Spinner from "../components/Spinner.svelte";
+	import { message } from "@tauri-apps/api/dialog";
+	import { flip } from "svelte/animate";
 
 	let loading = false;
 
 	async function handleSubmit() {
 		loading = true;
 		await invoke("update_data", { games: $gamesStore });
+		await message("List saved");
 		loading = false;
 	}
 
@@ -17,15 +23,24 @@
 			{ id: x.length + 1, title: "", icon: "", background: "", path: "" },
 		]);
 	}
+
+	function deleteEntry(e: CustomEvent) {
+		gamesStore.update((x) => x.filter((y) => y.id !== e.detail.id));
+	}
 </script>
 
-<div>
-	<h1 class="text-white text-5xl font-bold mb-6 pt-6">Game List</h1>
-	{#if loading}
-		<h2>Loading</h2>
-	{:else}
-		<div class="mb-4 flex justify-between">
-			<h3 class="text-gray-100 text-2xl">{$gamesStore.length} games saved</h3>
+<div
+	in:scale={{ duration: 200, easing: quintInOut, start: 2, delay: 200 }}
+	out:scale={{ duration: 200, easing: quintInOut, start: 2.0 }}
+	class="flex flex-col gap-4 py-8"
+>
+	<h1 class="text-white text-5xl font-bold">Game List</h1>
+	{#if !loading}
+		<div class=" flex justify-between">
+			<h3 class="text-gray-100 text-2xl">
+				{$gamesStore.length}
+				{$gamesStore.length == 1 ? "game" : "games"} saved
+			</h3>
 			<button on:click={addEntry}>
 				<h3
 					class="text-gray-100 text-3xl hover:cursor-pointer group hover:text-gray-400 active:scale-95"
@@ -45,13 +60,24 @@
 				</h3>
 			</button>
 		</div>
-		<ul class="flex flex-col gap-2">
+		<ul
+			class="flex flex-col gap-2 max-h-[70vh] overflow-y-scroll whitespace-nowrap"
+		>
 			{#each $gamesStore as game (game.id)}
-				<GameSlot {game} />
+				<div animate:flip={{ duration: 300 }}>
+					<GameSlot {game} on:delete={deleteEntry} />
+				</div>
 			{/each}
 		</ul>
-		<button class="p-5 bg-red-600 text-white" on:click={handleSubmit}>
-			Save
-		</button>
+		<div class="w-full grid justify-center">
+			<button
+				class="bg-gray-50 border-2 border-slate-800, rounded-lg font-semibold leading-5 px-10 py-3 text-center shadow hover:bg-gray-300 active:scale-95 focus-visible:shadow-none"
+				on:click={handleSubmit}
+			>
+				Save
+			</button>
+		</div>
+	{:else}
+		<Spinner />
 	{/if}
 </div>

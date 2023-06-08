@@ -31,10 +31,15 @@
 				"exit": true
 			},
 			"dialog": {
+				"message": true,
+				"confirm": true,
 				"open": true
 			}, 
 			"fs": {
 				"readFile": true
+			},
+			"window": {
+				"all": true
 			}
     },
 		"macOSPrivateApi": true,
@@ -62,10 +67,8 @@
         "width": 800,
         "height": 600,
 				"hiddenTitle": true,
-				"titleBarStyle": "Overlay",
 				"transparent": true,
-				"decorations": false
-
+				"titleBarStyle": "Overlay"
       }
     ],
 		"systemTray": {

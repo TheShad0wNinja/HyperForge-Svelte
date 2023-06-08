@@ -15,7 +15,15 @@ use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 use model::Game;
 use opener::open;
-use tauri::{Manager, State};
+use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
+use tauri::{Manager, State, SystemTray};
+
+#[tauri::command]
+fn open_window(app_handle: tauri::AppHandle) {
+    let window = app_handle.get_window("main").unwrap();
+    window.show().ok();
+    window.set_focus().ok();
+}
 
 #[tauri::command]
 fn open_app(path: String) -> Result<(), String> {
@@ -98,7 +106,17 @@ fn prepare_directories(path: &PathBuf) {
 }
 
 fn main() {
+    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(quit)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(hide);
+
+    let tray = SystemTray::new().with_menu(tray_menu);
+
     tauri::Builder::default()
+        .system_tray(tray)
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 event.window().hide().unwrap();
@@ -130,13 +148,21 @@ fn main() {
             apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
                 .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            window.listen("tauri://focus", |event| {
+                println!("{:?}", event);
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             open_app,
             load_data,
             update_data,
-            save_image
+            save_image,
+            open_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
