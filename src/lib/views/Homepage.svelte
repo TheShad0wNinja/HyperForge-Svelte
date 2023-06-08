@@ -1,45 +1,94 @@
 <script lang="ts">
 	import { invoke } from "@tauri-apps/api/tauri";
 	import { gamesStore } from "../store";
-	import { onMount } from "svelte";
+	import { onDestroy, onMount, tick } from "svelte";
 
 	import SliderBlock from "../components/SliderBlock.svelte";
 	import { scale } from "svelte/transition";
 	import { cubicIn, cubicOut } from "svelte/easing";
 	import Spinner from "../components/Spinner.svelte";
+	import { appWindow } from "@tauri-apps/api/window";
 
 	let isLoading = true;
 
+	let slides: HTMLElement[] = [];
+	let slider: HTMLDivElement;
+
+	let unlisten: Function;
+
+	$: emptySlidesPadding =
+		5 - $gamesStore.length < 0 ? 0 : Math.round((5 - $gamesStore.length) / 2);
+
 	onMount(async () => {
-		const data = (await invoke("load_data").catch((err) =>
-			console.log(err)
-		)) as Game[];
+		unlisten = await appWindow.onFocusChanged(({ payload: focused }) => {
+			if (!focused) appWindow.hide();
+		});
+
+		const data = (await invoke("load_data")) as Game[];
 		gamesStore.set(data);
 		isLoading = false;
+
+		await tick();
+		slider.scrollBy(slider.clientWidth / 4, 0);
 	});
+
+	onDestroy(() => {
+		unlisten();
+	});
+
+	function saveSlide(node: HTMLElement, index: number) {
+		slides[index] = node;
+	}
+
+	function handleScroll(e: Event) {
+		const el = e.currentTarget as HTMLDivElement;
+
+		if (el.scrollLeft < 10) {
+			slider.prepend(slides.at(-1));
+			const temp = slides.pop();
+			slides.unshift(temp);
+			slider.scrollBy(temp.clientWidth, 0);
+		}
+
+		if (el.scrollWidth - el.clientWidth - el.scrollLeft < 10) {
+			slider.append(slides[0]);
+			const temp = slides.shift();
+			slides.push(temp);
+			slider.scrollBy(-temp.clientWidth, 0);
+		}
+	}
 </script>
 
 {#if !isLoading}
 	<div
-		class="h-full grid items-center slider"
+		class="h-full grid items-center"
 		in:scale={{ duration: 200, easing: cubicOut, start: 0.4, delay: 200 }}
 		out:scale={{ duration: 200, easing: cubicIn, start: 0.4 }}
 	>
 		<div
-			class="h-[80%] overflow-x-scroll overflow-y-hidden whitespace-nowrap flex flex-nowrap gap-2 no-scrollbar slider"
+			class="h-[80%] overflow-x-scroll overflow-y-hidden whitespace-nowrap flex flex-nowrap no-scrollbar gap-2 slider"
+			on:scroll={handleScroll}
+			bind:this={slider}
 		>
 			{#if $gamesStore.length > 0}
 				{#if $gamesStore.length < 5}
-					{#each Array(Math.round(5 - $gamesStore.length) / 2) as _}
-						<div class="flex-[0_0_25%]" />
+					{#each Array(emptySlidesPadding) as _, idx}
+						<div class="flex-[0_0_25%] slide" use:saveSlide={idx} />
 					{/each}
 				{/if}
-				{#each $gamesStore as game (game.id)}
-					<SliderBlock {game} />
+				{#each $gamesStore as game, idx (game.id)}
+					<SliderBlock
+						{game}
+						action={saveSlide}
+						offset={idx + emptySlidesPadding}
+					/>
 				{/each}
 				{#if $gamesStore.length < 5}
-					{#each Array(Math.round(5 - $gamesStore.length) / 2) as _}
-						<div class="flex-[0_0_25%]" />
+					{#each Array(emptySlidesPadding) as _, idx}
+						<div
+							class="flex-[0_0_25%] slide"
+							use:saveSlide={idx + emptySlidesPadding + $gamesStore.length}
+						/>
 					{/each}
 				{/if}
 			{:else}

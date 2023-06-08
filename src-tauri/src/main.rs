@@ -20,6 +20,7 @@ use tauri::{Manager, State, SystemTray};
 
 #[tauri::command]
 fn open_window(app_handle: tauri::AppHandle) {
+    println!("Shortcut");
     let window = app_handle.get_window("main").unwrap();
     window.show().ok();
     window.set_focus().ok();
@@ -107,16 +108,19 @@ fn prepare_directories(path: &PathBuf) {
 
 fn main() {
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(quit)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(hide);
+    let tray_menu = SystemTrayMenu::new().add_item(quit);
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
         .system_tray(tray)
+        .on_system_tray_event(|app, event| match event {
+            tauri::SystemTrayEvent::MenuItemClick { tray_id, id, .. } => match id.as_str() {
+                "quit" => app.exit(0),
+                _ => {}
+            },
+            _ => {}
+        })
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 event.window().hide().unwrap();
