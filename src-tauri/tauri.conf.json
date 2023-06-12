@@ -65,9 +65,10 @@
         "title": "HyperForge",
         "width": 800,
         "height": 600,
-				"hiddenTitle": true,
-				"transparent": true,
-				"titleBarStyle": "Overlay"
+				"hiddenTitle": false,
+				"transparent": false,
+				"titleBarStyle": "Visible",
+				"theme": "Dark"
       }
     ],
 		"systemTray": {

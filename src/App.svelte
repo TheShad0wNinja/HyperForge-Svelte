@@ -6,13 +6,13 @@
 	import { register, isRegistered } from "@tauri-apps/api/globalShortcut";
 	import { onMount } from "svelte";
 
-	onMount(async () => {
-		const commandIsRegister = await isRegistered("Alt+Shift+G");
-		if (!commandIsRegister)
-			await register("Alt+Shift+G", () => {
-				invoke("open_window");
-			});
-	});
+	// onMount(async () => {
+	// 	const commandIsRegister = await isRegistered("Alt+Shift+G");
+	// 	if (!commandIsRegister)
+	// 		await register("Alt+Shift+G", () => {
+	// 			invoke("open_window");
+	// 		});
+	// });
 
 	const PageViews = {
 		Homepage: 0,

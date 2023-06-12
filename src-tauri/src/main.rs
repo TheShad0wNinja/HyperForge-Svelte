@@ -125,13 +125,13 @@ fn main() {
             },
             _ => {}
         })
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::CloseRequested { api, .. } => {
-                event.window().hide().unwrap();
-                api.prevent_close();
-            }
-            _ => {}
-        })
+        // .on_window_event(|event| match event.event() {
+        //     tauri::WindowEvent::CloseRequested { api, .. } => {
+        //         event.window().hide().unwrap();
+        //         api.prevent_close();
+        //     }
+        //     _ => {}
+        // })
         .setup(|app| {
             let Some(resource_path) = app.path_resolver().app_data_dir() else {
                 panic!("Cannot find path for data folder");
@@ -148,12 +148,12 @@ fn main() {
                 return Ok(());
             };
 
-            #[cfg(target_os = "windows")]
-            apply_mica(&window);
-
-            #[cfg(target_os = "macos")]
-            apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
-                .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+            // #[cfg(target_os = "windows")]
+            // apply_mica(&window);
+            //
+            // #[cfg(target_os = "macos")]
+            // apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
+            //     .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);

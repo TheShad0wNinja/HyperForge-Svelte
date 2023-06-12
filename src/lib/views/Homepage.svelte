@@ -14,15 +14,15 @@
 	let slides: HTMLElement[] = [];
 	let slider: HTMLDivElement;
 
-	let unlisten: Function;
+	// let unlisten: Function;
 
 	$: emptySlidesPadding =
 		5 - $gamesStore.length < 0 ? 0 : Math.round((5 - $gamesStore.length) / 2);
 
 	onMount(async () => {
-		unlisten = await appWindow.onFocusChanged(({ payload: focused }) => {
-			if (!focused) appWindow.hide();
-		});
+		// unlisten = await appWindow.onFocusChanged(({ payload: focused }) => {
+		// 	if (!focused) appWindow.hide();
+		// });
 
 		const data = (await invoke("load_data")) as Game[];
 		gamesStore.set(data);
@@ -32,9 +32,9 @@
 		slider.scrollBy(slider.clientWidth / 4, 0);
 	});
 
-	onDestroy(() => {
-		unlisten();
-	});
+	// onDestroy(() => {
+	// 	unlisten();
+	// });
 
 	function saveSlide(node: HTMLElement, index: number) {
 		slides[index] = node;
