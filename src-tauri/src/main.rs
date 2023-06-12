@@ -11,11 +11,11 @@ use rand::Rng;
 use std::fs::{create_dir, remove_file, write};
 use std::path::Path;
 use std::path::PathBuf;
-use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
+use window_vibrancy::{apply_mica, apply_vibrancy, NSVisualEffectMaterial};
 
 use model::Game;
 use opener::open;
-use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
+use tauri::{CustomMenuItem, SystemTrayMenu};
 use tauri::{Manager, State, SystemTray};
 
 #[tauri::command]
@@ -115,7 +115,11 @@ fn main() {
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(|app, event| match event {
-            tauri::SystemTrayEvent::MenuItemClick { tray_id, id, .. } => match id.as_str() {
+            tauri::SystemTrayEvent::MenuItemClick {
+                tray_id: _tray_id,
+                id,
+                ..
+            } => match id.as_str() {
                 "quit" => app.exit(0),
                 _ => {}
             },
@@ -145,8 +149,7 @@ fn main() {
             };
 
             #[cfg(target_os = "windows")]
-            apply_blur(&window, Some((18, 18, 18, 125)))
-                .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+            apply_mica(&window);
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
