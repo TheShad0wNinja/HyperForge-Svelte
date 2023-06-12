@@ -19,14 +19,18 @@
 		Options: 1,
 	};
 
-	let page = PageViews.Homepage;
+	let page = PageViews.Options;
 
 	function toggleSettings() {
 		page = page === PageViews.Options ? PageViews.Homepage : PageViews.Options;
+		test = "balls";
 	}
+
+	let test = "Ligma";
 </script>
 
 <div class="container mx-auto h-screen select-none overflow-hidden">
+	<h2>{test}</h2>
 	<aside class=" fixed right-0 h-full w-12">
 		<button on:click={toggleSettings}>
 			<svg
