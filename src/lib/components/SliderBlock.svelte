@@ -17,7 +17,7 @@
 
 <button on:click={openApp} class="flex-[0_0_25%] slide" use:action={offset}>
 	<div
-		class="w-full bg-cover bg-fixed bg-no-repeat bg-left h-full grid justify-center items-center relative group inner-glow"
+		class="w-full h-[80%] bg-cover bg-fixed bg-no-repeat bg-left grid justify-center items-center relative group inner-glow"
 		style="background-image: url({backgroundUrl});"
 	>
 		{#if iconUrl.length > 0}
